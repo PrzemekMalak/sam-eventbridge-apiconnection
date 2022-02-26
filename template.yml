@@ -8,7 +8,7 @@ Globals:
 Resources:
 
 #####################
-### API
+### API - Destination
 #####################
   APIFunction:
     Type: AWS::Serverless::Function 
@@ -58,6 +58,17 @@ Resources:
         - Arn: !GetAtt EventRuleApiDestination.Arn
           Id: api
           RoleArn: !GetAtt EventRuleApiConnectionRole.Arn
+          InputTransformer:
+              InputPathsMap: 
+                BucketName: "$.detail.requestParameters.bucketName"
+                User: "$.detail.userIdentity.principalId"
+                EventName: "$.detail.eventName"
+              InputTemplate: | 
+                {
+                  "bucketName": <BucketName>, 
+                  "Principal": <User>, 
+                  "Event": <EventName>
+                }
       EventPattern: {"source": ["aws.s3"],"detail-type": ["AWS API Call via CloudTrail"],"detail": {"eventSource": ["s3.amazonaws.com"],"eventName": ["CreateBucket", "PutBucketAcl", "PutBucketPolicy"]}}
   
   CustomEventRule:
